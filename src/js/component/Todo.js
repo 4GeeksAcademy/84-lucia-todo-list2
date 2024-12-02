@@ -1,53 +1,117 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from "react";
+import "../../styles/index.css";
 
-const Todo  = () => {
-	const [inputValue, setinputValue] = useState ("")
-	const [todos,setTodos] = useState([]);
+const Home = () => {
+	const [newTodo, setNewTodo] = useState("");
+	const [todoList, setTodoList] = useState([]);
 
-	const addTodo = (e) => {
-		if (e.key === "Enter" && inputValue.trim()) {
-		  setTodos([...todos, inputValue]);
-		  setInputValue(""); 
+	const newUser = async () => {
+		try {
+			const response = await fetch("https://playground.4geeks.com/todo/users/luciacanalda", {
+				method: "POST",
+				body: JSON.stringify([]),
+				headers: {
+					"Content-Type": "application/json",
+				},
+			});
+			if (!response.ok) throw new Error("Failed to create new user");
+		} catch (error) {
+			console.error("Error creating user:", error);
 		}
-	  };
+	};
 
-	  const deleteTodo = (index) => {
-		setTodos(todos.filter((_, i) => i !== index));
-	  };
-  return (
+	useEffect(() => {
+		const fetchTodos = async () => {
+			try {
+				let response = await fetch("https://playground.4geeks.com/todo/users/luciacanalda");
+				if (!response.ok) {
+					if (response.status === 404) await newUser();
+					response = await fetch("https://playground.4geeks.com/todo/users/luciacanalda");
+				}
+				const data = await response.json();
+				setTodoList(data.todos);
+			} catch (error) {
+				console.error("Error fetching todos:", error);
+			}
+		};
 
-	<div className='container'>
+		fetchTodos();
+	}, []);
 
+	const handleEnter = async (e) => {
+		if (e.key === "Enter" && newTodo.trim()) {
+			const data = { label: newTodo, done: false };
+			try {
+				const response = await fetch("https://playground.4geeks.com/todo/todos/luciacanalda", {
+					method: "POST",
+					body: JSON.stringify(data),
+					headers: {
+						"Content-Type": "application/json",
+					},
+				});
+				if (!response.ok) throw new Error("Failed to add new todo");
+				const todo = await response.json();
+				setTodoList((prevList) => [...prevList, todo]);
+				setNewTodo("");
+			} catch (error) {
+				console.error("Error adding todo:", error);
+			}
+		}
+	};
 
-	<h1>To-Dos</h1>
-<div className='tasks'>
+	const handleDelete = async (index) => {
+		const itemToDelete = todoList[index];
+		try {
+			await fetch(`https://playground.4geeks.com/todo/todos/${itemToDelete.id}`, {
+				method: 'DELETE',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+			setTodoList(todoList.filter((_, i) => i !== index));
+		} catch (error) {
+			console.error("Error deleting todo:", error);
+		}
+	};
 
-<ul className='list-group'>
+	const handleDeleteAll = async () => {
+		try {
+			await fetch('https://playground.4geeks.com/todo/users/luciacanalda', { method: 'DELETE' });
+			await newUser();  
+			setTodoList([]);
+		} catch (error) {
+			console.error("Error deleting all todos:", error);
+		}
+	}
 
-	<li>
-	<input
-	type="text" 
-	onChange= {(e) => setinputValue(e.target.value)}
-	value={inputValue}
-	onKeyPress= {addTodo}
-
-	placeholder='What Needs to be Done?'/>
-
-</li>
-
-{todos.map((todo, index) => (
-          <li key={index}>
-            {todo}
-			<button onClick={() => deleteTodo(index)}>
-              Done!
-            </button>
-          </li>
-		   ))}
- </ul>
-      <div>{todos.length} tasks</div>
-    </div>
-	</div>
-  );
+	return (
+		<div className="text-center container">
+			<h1 className="text-center mt-5">My To-do List</h1>
+			<input className="form-control" placeholder="¿Nuevas tareas?"
+				value={newTodo}
+				onChange={(e) => setNewTodo(e.target.value)}
+				onKeyDown={handleEnter} />
+			<h3 className="mt-2">To-do: </h3>
+			<ul>
+				{todoList.length === 0 ? (
+					<p>Sin tareas pendientes</p>
+				) : (
+						todoList.map((todo, index) => (
+							<p key={index}>
+								{todo.label}
+								<span
+									onClick={() => handleDelete(index)}>
+									✅
+								</span>
+							</p>
+						))
+				)}
+			</ul>
+			<div className="col-12">
+				<button className="btn btn-primary" onClick={handleDeleteAll}>Eliminar tareas</button>
+			</div>
+		</div>
+	);
 };
 
-export default Todo;
+export default Home;

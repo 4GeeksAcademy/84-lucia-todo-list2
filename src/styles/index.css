@@ -1,35 +1,13 @@
+.span {
 
-li{
-
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 5px;
-border-radius: 8px;
-}
-
-input {
-
-margin-block: auto;
-text-align: center;
-padding: 5px;
-width: 100%;
-border: none;
+color: "black";
+margin-left: 3rem;
+cursor: pointer;
 
 }
 
-h1 {
+.p {
 
-text-align: center;
-font-family: Verdana, Geneva, Tahoma, sans-serif;
-color: gray;
+    font-size: small;
 }
 
-button {
-
-
-    background-color: grey;
-    margin-left: 10px;
-    border: 2px;
-    color: white;
-}
