@@ -108,7 +108,7 @@ const Home = () => {
 				)}
 			</ul>
 			<div className="col-12">
-				<button className="btn btn-primary" onClick={handleDeleteAll}>Eliminar tareas</button>
+				<button className="btn btn-primary" onClick={handleDeleteAll}>Tareas Completadas ✅ </button>
 			</div>
 		</div>
 	);
